@@ -1,67 +1,87 @@
 import React from 'react';
+import { View, Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useTheme } from '../../src/context/ThemeContext';
 import { Home, ClipboardList, Syringe, TrendingUp, Settings } from 'lucide-react-native';
 
 export default function TabLayout() {
-  const { color } = useTheme(); // <--- Aquí jalamos tu color personalizado
+  const { color } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        // El color que elegiste en Ajustes se aplica aquí
+        // LA NUEVA MAGIA: Aquí es donde debe ir en las versiones nuevas de Expo Router
+        sceneStyle: { backgroundColor: '#F3F4F6' },
+        headerShown: false, 
+        tabBarShowLabel: true, 
         tabBarActiveTintColor: color,
-        tabBarInactiveTintColor: '#8E8E93',
+        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '600',
+          marginBottom: 5,
+        },
         tabBarStyle: {
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-          backgroundColor: 'white',
-          borderTopWidth: 1,
-          borderTopColor: '#F2F2F7',
+          position: 'absolute',
+          bottom: 0, 
+          left: 15,
+          right: 15,
+          backgroundColor: '#FFFFFF',
+          borderRadius: 25,
+          height: 70,
+          borderTopWidth: 0,
+          elevation: 8, 
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
+          paddingTop: 5,
         },
-        headerStyle: {
-          backgroundColor: color, // El encabezado también se pinta del color del rancho
-        },
-        headerTintColor: 'white', // Texto del encabezado siempre blanco para que resalte
-        headerTitleStyle: {
-          fontWeight: 'bold',
-          fontSize: 18,
-        },
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Inicio',
-          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Home color={color} size={24} strokeWidth={focused ? 2.5 : 2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="inventario"
         options={{
           title: 'Inventario',
-          tabBarIcon: ({ color }) => <ClipboardList size={24} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <ClipboardList color={color} size={24} strokeWidth={focused ? 2.5 : 2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="salud"
         options={{
           title: 'Salud',
-          tabBarIcon: ({ color }) => <Syringe size={24} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Syringe color={color} size={24} strokeWidth={focused ? 2.5 : 2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="reportes"
         options={{
           title: 'Reportes',
-          tabBarIcon: ({ color }) => <TrendingUp size={24} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TrendingUp color={color} size={24} strokeWidth={focused ? 2.5 : 2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="ajustes"
         options={{
           title: 'Ajustes',
-          tabBarIcon: ({ color }) => <Settings size={24} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Settings color={color} size={24} strokeWidth={focused ? 2.5 : 2} />
+          ),
         }}
       />
     </Tabs>

@@ -1,120 +1,133 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../src/services/supabase';
-import { COLORS } from '../src/constants/Colors';
-import { LogIn, Phone } from 'lucide-react-native';
-import { useRouter } from 'expo-router'; 
+import { LogIn, Eye, EyeOff, Mail, Lock } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const router = useRouter();
 
   async function signInWithEmail() {
+    if (!email || !password) { setErrorMsg('Por favor llena todos los campos.'); return; }
+    setErrorMsg('');
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
-
-    if (error) Alert.alert('Error', error.message);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) setErrorMsg(error.message);
     setLoading(false);
   }
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      style={styles.container}
-    >
-      <View style={styles.inner}>
-        {/* Aquí irá el logo de tu rancho más adelante */}
-        <View style={styles.logoContainer}>
-            <View style={styles.logoPlaceholder}>
-                <Text style={styles.logoText}>RD</Text>
+    <LinearGradient colors={['#1A3A14', '#2D5A27', '#4A7C59']} style={styles.gradient}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+
+          <View style={styles.logoSection}>
+            <View style={styles.logoBox}>
+              <Text style={styles.logoText}>RD</Text>
             </View>
-          <Text style={styles.title}>Rancho Digital</Text>
-          <Text style={styles.subtitle}>Gestión Ganadera Profesional</Text>
-        </View>
+            <Text style={styles.title}>Rancho Digital</Text>
+            <Text style={styles.subtitle}>Gestión Ganadera Profesional</Text>
+          </View>
 
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Correo electrónico"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-        </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Bienvenido de vuelta</Text>
 
-        <TouchableOpacity 
-            style={[styles.button, { backgroundColor: COLORS.primary }]} 
-            onPress={signInWithEmail}
-            disabled={loading}
-        >
-          <LogIn size={20} color="white" />
-          <Text style={styles.buttonText}>{loading ? 'Entrando...' : 'Iniciar Sesión'}</Text>
-        </TouchableOpacity>
+            {errorMsg ? (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{errorMsg}</Text>
+              </View>
+            ) : null}
 
-        <TouchableOpacity 
-          onPress={() => router.push('/registro')} 
-          style={{ marginTop: 20, marginVertical: 30, alignItems: 'center' }}
-        >
-          <Text style={{ color: '#2D5A27', fontWeight: 'bold', fontSize: 17 }}>
-            ¿No tienes cuenta? Regístrate aquí
-          </Text>
-        </TouchableOpacity>
+            <View style={styles.inputWrapper}>
+              <Mail color="#9CA3AF" size={20} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Correo electrónico"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                placeholderTextColor="#9CA3AF"
+              />
+            </View>
 
-        <TouchableOpacity style={styles.googleButton}>
-          <Image 
-            source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg' }} 
-            style={styles.googleIcon} 
-          />
-          <Text style={styles.googleButtonText}>Entrar con Google</Text>
-        </TouchableOpacity>
+            <View style={styles.inputWrapper}>
+              <Lock color="#9CA3AF" size={20} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Contraseña"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                placeholderTextColor="#9CA3AF"
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+                {showPassword ? <EyeOff color="#9CA3AF" size={20} /> : <Eye color="#9CA3AF" size={20} />}
+              </TouchableOpacity>
+            </View>
 
-        <Text style={styles.footerText}>¿Olvidaste tu contraseña o necesitas acceso?</Text>
-        <Text style={styles.footerLink}>Contacta al Administrador</Text>
-      </View>
-    </KeyboardAvoidingView>
+            <TouchableOpacity style={styles.loginBtn} onPress={signInWithEmail} disabled={loading}>
+              {loading ? <ActivityIndicator color="white" /> : (
+                <><LogIn color="white" size={20} /><Text style={styles.loginBtnText}>Iniciar Sesión</Text></>
+              )}
+            </TouchableOpacity>
+
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>o continúa con</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <TouchableOpacity style={styles.googleBtn}>
+              <Text style={styles.googleText}>🌐  Entrar con Google</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => router.push('/registro')} style={styles.registerLink}>
+              <Text style={styles.registerText}>
+                ¿No tienes cuenta? <Text style={styles.registerBold}>Regístrate aquí</Text>
+              </Text>
+            </TouchableOpacity>
+
+            <Text style={styles.footerText}>¿Problemas de acceso? Contacta al Administrador</Text>
+          </View>
+
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF' },
-  inner: { flex: 1, padding: 30, justifyContent: 'center' },
-  logoContainer: { alignItems: 'center', marginBottom: 50 },
-  logoPlaceholder: { 
-    width: 80, height: 80, borderRadius: 20, 
-    backgroundColor: '#2D5A27', justifyContent: 'center', alignItems: 'center',
-    marginBottom: 15
-  },
-  logoText: { color: 'white', fontSize: 32, fontWeight: 'bold' },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#1C1C1E' },
-  subtitle: { fontSize: 16, color: '#8E8E93', marginTop: 5 },
-  inputContainer: { marginBottom: 20 },
-  input: { 
-    backgroundColor: '#F2F2F7', padding: 18, borderRadius: 12, 
-    marginBottom: 15, fontSize: 16 
-  },
-  button: { 
-    flexDirection: 'row', height: 55, borderRadius: 12, 
-    justifyContent: 'center', alignItems: 'center', marginBottom: 15 
-  },
-  buttonText: { color: 'white', fontSize: 18, fontWeight: '600', marginLeft: 10 },
-  googleButton: { 
-    flexDirection: 'row', height: 55, borderRadius: 12, borderWidth: 1, 
-    borderColor: '#D1D1D6', justifyContent: 'center', alignItems: 'center' 
-  },
-  googleIcon: { width: 20, height: 20, marginRight: 10 },
-  googleButtonText: { color: '#1C1C1E', fontSize: 16, fontWeight: '500' },
-  footerText: { textAlign: 'center', color: '#8E8E93', marginTop: 30 },
-  footerLink: { textAlign: 'center', color: '#2D5A27', fontWeight: 'bold', marginTop: 5 }
+  gradient: { flex: 1 },
+  scroll: { flexGrow: 1, justifyContent: 'center', padding: 24, paddingTop: 60, paddingBottom: 40 },
+  logoSection: { alignItems: 'center', marginBottom: 32 },
+  logoBox: { width: 90, height: 90, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center', marginBottom: 16, borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)' },
+  logoText: { color: 'white', fontSize: 36, fontWeight: '900' },
+  title: { fontSize: 30, fontWeight: '900', color: 'white' },
+  subtitle: { fontSize: 15, color: 'rgba(255,255,255,0.75)', marginTop: 4, fontWeight: '600' },
+  card: { backgroundColor: 'white', borderRadius: 28, padding: 24, elevation: 10, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } },
+  cardTitle: { fontSize: 22, fontWeight: '900', color: '#111827', marginBottom: 20, textAlign: 'center' },
+  errorBox: { backgroundColor: '#FEE2E2', padding: 12, borderRadius: 12, marginBottom: 16 },
+  errorText: { color: '#DC2626', fontWeight: '700', fontSize: 14, textAlign: 'center' },
+  inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', borderRadius: 14, borderWidth: 1.5, borderColor: '#E5E7EB', paddingHorizontal: 16, marginBottom: 14, height: 56 },
+  inputIcon: { marginRight: 12 },
+  input: { flex: 1, fontSize: 16, color: '#111827', fontWeight: '600' },
+  eyeBtn: { padding: 4 },
+  loginBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#2D5A27', borderRadius: 16, height: 56, gap: 10, marginTop: 4, marginBottom: 20 },
+  loginBtnText: { color: 'white', fontSize: 18, fontWeight: '900' },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: '#E5E7EB' },
+  dividerText: { marginHorizontal: 12, color: '#9CA3AF', fontSize: 13, fontWeight: '600' },
+  googleBtn: { borderWidth: 1.5, borderColor: '#E5E7EB', borderRadius: 16, height: 52, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  googleText: { fontSize: 16, fontWeight: '700', color: '#374151' },
+  registerLink: { alignItems: 'center', marginBottom: 16 },
+  registerText: { color: '#6B7280', fontSize: 15, fontWeight: '600' },
+  registerBold: { color: '#2D5A27', fontWeight: '900' },
+  footerText: { textAlign: 'center', color: '#9CA3AF', fontSize: 12, fontWeight: '600' },
 });
